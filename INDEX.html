@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="htmlTag">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة السعرات المتطورة | Advanced Calorie Calculator</title>
+    <style>
+        :root { --primary: #1a73e8; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        .lang-switcher { text-align: left; margin-bottom: 15px; }
+        .lang-btn { background: #eee; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #444; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        button#calcBtn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 17px; font-weight: bold; margin-top: 15px; }
+
+        #results { margin-top: 25px; display: none; border-top: 2px solid #eee; padding-top: 20px; }
+        .res-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .res-item { background: #fff; padding: 12px; border-radius: 12px; text-align: center; border: 2px solid #f0f0f0; }
+        .res-item span { display: block; font-size: 18px; font-weight: bold; color: var(--primary); }
+        .maintenance-box { grid-column: span 2; background: #f1f3f4; }
+        .target-box { grid-column: span 2; background: #e8f0fe; border-color: var(--primary); }
+        .macro-item { background: #fff; border: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="lang-switcher">
+        <button class="lang-btn" onclick="toggleLanguage()">English</button>
+    </div>
+
+    <h2 id="title">حاسبة السعرات والماكروز</h2>
+
+    <div class="input-group">
+        <label id="lblGoal">الهدف الحالي:</label>
+        <select id="goal">
+            <option value="cutting" id="optCut">تنشيف (Loss)</option>
+            <option value="bulking" id="optBulk">تضخيم (Gain)</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label id="lblGender">الجنس:</label>
+        <select id="gender">
+            <option value="male" id="optMale">ذكر</option>
+            <option value="female" id="optFemale">أنثى</option>
+        </select>
+    </div>
+
+    <div class="grid-3">
+        <div class="input-group"><label id="lblWeight">الوزن (كجم)</label><input type="number" id="weight"></div>
+        <div class="input-group"><label id="lblHeight">الطول (سم)</label><input type="number" id="height"></div>
+        <div class="input-group"><label id="lblAge">العمر</label><input type="number" id="age"></div>
+    </div>
+
+    <div class="input-group">
+        <label id="lblActivity">مستوى النشاط:</label>
+        <select id="activity">
+            <option value="1.2" id="act1">خامل جداً</option>
+            <option value="1.375" id="act2">نشاط خفيف</option>
+            <option value="1.55" id="act3">نشاط متوسط</option>
+            <option value="1.725" id="act4">نشاط عالٍ</option>
+        </select>
+    </div>
+
+    <button id="calcBtn" onclick="calculate()">احسب الآن</button>
+
+    <div id="results">
+        <div class="res-box">
+            <div class="res-item maintenance-box">
+                <label id="lblMainRes">سعرات المحافظة (لثبات الوزن)</label>
+                <span id="maintenance-val">0</span>
+            </div>
+            <div class="res-item target-box">
+                <label id="lblTargetRes">السعرات المطلوبة لهدفك</label>
+                <span id="target-val">0</span>
+            </div>
+            <div class="res-item macro-item"><label id="lblProt">بروتين (جرام)</label><span id="prot-res">0</span></div>
+            <div class="res-item macro-item"><label id="lblFat">دهون (جرام)</label><span id="fat-res">0</span></div>
+            <div class="res-item macro-item" style="grid-column: span 2;"><label id="lblCarb">كربوهيدرات (جرام)</label><span id="carb-res">0</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentLang = 'ar';
+
+    const translations = {
+        ar: {
+            title: "حاسبة السعرات والماكروز", lblGoal: "الهدف الحالي:", optCut: "تنشيف (Loss)", optBulk: "تضخيم (Gain)",
+            lblGender: "الجنس:", optMale: "ذكر", optFemale: "أنثى", lblWeight: "الوزن (كجم)", lblHeight: "الطول (سم)",
+            lblAge: "العمر", lblActivity: "نشاطك:", act1: "خامل جداً", act2: "نشاط خفيف", act3: "نشاط متوسط",
+            act4: "نشاط عالٍ", calcBtn: "احسب الآن", lblMainRes: "سعرات المحافظة (لثبات الوزن)",
+            lblTargetRes: "السعرات المطلوبة لهدفك", lblProt: "بروتين (جرام)", lblFat: "دهون (جرام)", lblCarb: "كربوهيدرات (جرام)"
+        },
+        en: {
+            title: "Calorie & Macros Calculator", lblGoal: "Current Goal:", optCut: "Cutting (Loss)", optBulk: "Bulking (Gain)",
+            lblGender: "Gender:", optMale: "Male", optFemale: "Female", lblWeight: "Weight (kg)", lblHeight: "Height (cm)",
+            lblAge: "Age", lblActivity: "Activity:", act1: "Sedentary", act2: "Lightly Active", act3: "Moderately Active",
+            act4: "Very Active", calcBtn: "Calculate Now", lblMainRes: "Maintenance Calories (TDEE)",
+            lblTargetRes: "Target Calories for your Goal", lblProt: "Protein (g)", lblFat: "Fat (g)", lblCarb: "Carbs (g)"
+        }
+    };
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        const html = document.getElementById('htmlTag');
+        html.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+        html.lang = currentLang;
+
+        document.querySelector('.lang-btn').innerText = currentLang === 'ar' ? 'English' : 'العربية';
+
+        for (let key in translations[currentLang]) {
+            const el = document.getElementById(key === 'calcBtn' ? 'calcBtn' : key.startsWith('lbl') || key.startsWith('opt') || key.startsWith('act') ? key : key);
+            if(el) {
+                if(el.tagName === 'OPTION' || el.tagName === 'LABEL' || el.tagName === 'BUTTON' || el.tagName === 'H2' || el.tagName === 'DIV') {
+                    el.innerText = translations[currentLang][key];
+                }
+            }
+        }
+    }
+
+    function calculate() {
+        const weight = parseFloat(document.getElementById('weight').value);
+        const height = parseFloat(document.getElementById('height').value);
+        const age = parseFloat(document.getElementById('age').value);
+        const gender = document.getElementById('gender').value;
+        const activity = parseFloat(document.getElementById('activity').value);
+        const goal = document.getElementById('goal').value;
+
+        if(!weight || !height || !age) return alert(currentLang === 'ar' ? "أكمل البيانات" : "Fill all fields");
+
+        // 1. حساب سعرات المحافظة (TDEE)
+        let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+        bmr = (gender === 'male') ? bmr + 5 : bmr - 161;
+        const maintenance = Math.round(bmr * activity);
+
+        // 2. حساب الهدف والبروتين
+        let target, protMult;
+        if(goal === 'cutting') {
+            target = maintenance - 500;
+            protMult = 2.0;
+        } else {
+            target = maintenance + 300;
+            protMult = 1.8;
+        }
+
+        // 3. الماكروز
+        const protein = Math.round(weight * protMult);
+        const fat = Math.round((target * 0.25) / 9);
+        const carbs = Math.round((target - (protein * 4) - (fat * 9)) / 4);
+
+        // 4. العرض
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('maintenance-val').innerText = maintenance;
+        document.getElementById('target-val').innerText = target;
+        document.getElementById('prot-res').innerText = protein;
+        document.getElementById('fat-res').innerText = fat;
+        document.getElementById('carb-res').innerText = carbs;
+    }
+</script>
+
+</body>
+</html>
